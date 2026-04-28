@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using umfgcloud.loja.aplicacao.service.Builders;
+using umfgcloud.loja.aplicacao.service.Diretores;
 using umfgcloud.loja.dominio.service.DTO;
 using umfgcloud.loja.dominio.service.Entidades;
 using umfgcloud.loja.dominio.service.Interfaces.Repositorios;
@@ -25,28 +27,20 @@ namespace umfgcloud.loja.aplicacao.service.Classes
 
         public async Task AdicionarAsync(ProdutoDTO.ProdutoRequest dto)
         {
-            //os dados inerentes ao usuário são enviados via JWT
-            var produto = new ProdutoEntity(UserId, UserEmail);
-
-            //dto transita os dados inerentes a tabela
-            produto.SetDescricao(dto.Descricao);
-            produto.SetEAN(dto.EAN);
-            produto.SetValorCompra(dto.ValorCompra);
-            produto.SetValorVenda(dto.ValorVenda);
+            var builder = new NovoProdutoBuilder(UserId, UserEmail);
+            var diretor = new ProdutoDiretor(builder);
+            var produto = diretor.BuildProdutoRequest(dto);
 
             await _repositorio.AdicionarAsync(produto);
         }
 
         public async Task AtualizarAsync(ProdutoDTO.AbstractProdutoWithIdDTO dto)
         {
-            var produto = await _repositorio.ObterPorIdAsync(dto.Id);
+            var produtoExistente = await _repositorio.ObterPorIdAsync(dto.Id);
+            var builder = new AtualizacaoProdutoBuilder(produtoExistente, UserId, UserEmail);
+            var diretor = new ProdutoDiretor(builder);
 
-            produto.SetDescricao(dto.Descricao);
-            produto.SetEAN(dto.EAN);
-            produto.SetValorCompra(dto.ValorCompra);
-            produto.SetValorVenda(dto.ValorVenda);
-
-            produto.Update(UserId, UserEmail);
+            var produto = diretor.BuildProdutoRequestWithId(dto);
 
             await _repositorio.AtualizarAsync(produto);
         }

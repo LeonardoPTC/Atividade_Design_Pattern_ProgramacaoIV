@@ -37,6 +37,9 @@ namespace umfgcloud.loja.dominio.service.Entidades
             if (valorVenda <= decimal.Zero)
                 throw new InvalidDataException($"Valor venda informado {valorVenda} inválido!");
 
+            if (valorVenda < ValorCompra)
+                throw new InvalidDataException("Valor de venda não pode ser menor que valor de compra!");
+
             ValorVenda = Math.Round(valorVenda, 2);
         }
     }
